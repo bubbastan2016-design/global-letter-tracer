@@ -1,0 +1,1215 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Letter Tracer - Learn to Write in 100+ Languages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .language-selector {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .language-selector label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        select:hover, select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .letter-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .current-letter {
+            font-size: 120px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        .letter-info {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .pronunciation {
+            font-size: 24px;
+            color: #764ba2;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 20px;
+            background: #fafafa;
+            border-radius: 15px;
+            border: 3px dashed #ddd;
+        }
+        
+        #tracingCanvas {
+            width: 100%;
+            height: 400px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        
+        .guideline {
+            position: absolute;
+            border-top: 2px dashed #ccc;
+            width: 100%;
+            pointer-events: none;
+        }
+        
+        .guideline.baseline { bottom: 100px; }
+        .guideline.midline { bottom: 250px; }
+        .guideline.topline { bottom: 350px; }
+        
+        .progress-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .alphabet-item {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f8f8;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .alphabet-item:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .alphabet-item.active {
+            background: #764ba2;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .alphabet-item.learned {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 10px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .feedback {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .feedback.show {
+            opacity: 1;
+        }
+        
+        .feedback.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .feedback.try-again {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .mode-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .mode-tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .mode-tab:hover:not(.active) {
+            background: #f0f0f0;
+        }
+        
+        .word-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 15px;
+        }
+        
+        .word-display {
+            font-size: 36px;
+            text-align: center;
+            margin: 15px 0;
+            color: #333;
+        }
+        
+        .word-meaning {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            display: none;
+            z-index: 1000;
+            animation: celebrate 1s ease-out;
+        }
+        
+        @keyframes celebrate {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.5); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .achievement-banner {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-200px);
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #333;
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.5);
+            z-index: 2000;
+            text-align: center;
+            transition: transform 0.5s ease-out;
+            border: 3px solid #fff;
+        }
+        
+        .achievement-banner.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .achievement-banner h2 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        
+        .achievement-banner p {
+            margin: 0;
+            font-size: 16px;
+        }
+        
+        .create-language-section {
+            margin-top: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            color: white;
+            display: none;
+        }
+        
+        .create-language-section.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .create-language-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        
+        .create-language-section input, .create-language-section textarea {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-family: inherit;
+        }
+        
+        .create-language-section textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .progress-overview {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar-container {
+            margin: 10px 0;
+        }
+        
+        .progress-bar-container label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .mini-progress {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+        
+        .mini-progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .current-letter {
+                font-size: 80px;
+            }
+            
+            #tracingCanvas {
+                height: 300px;
+            }
+            
+            .achievement-banner {
+                padding: 15px 20px;
+                width: 90%;
+            }
+            
+            .achievement-banner h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌍 Global Letter Tracer</h1>
+        <p>Learn to write and read in 100+ languages!</p>
+    </div>
+    
+    <div class="main-container">
+        <div class="mode-tabs">
+            <div class="mode-tab active" onclick="setMode('trace')">✏️ Trace Letters</div>
+            <div class="mode-tab" onclick="setMode('read')">📖 Read Words</div>
+        </div>
+        
+        <div class="controls">
+            <div class="language-selector">
+                <label for="languageSelect">🌐 Select Language:</label>
+                <select id="languageSelect" onchange="changeLanguage()">
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="clearCanvas()">🗑️ Clear</button>
+                <button class="btn-primary" onclick="speakCurrent()">🔊 Hear It</button>
+                <button class="btn-secondary" id="caseToggle" onclick="toggleCase()">🔠 Uppercase</button>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div id="traceMode">
+            <div class="letter-display">
+                <div class="letter-info" id="letterInfo">Letter 1 of 26</div>
+                <div class="current-letter" id="currentLetter">A</div>
+                <div class="pronunciation" id="pronunciation">/eɪ/</div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="tracingCanvas"></canvas>
+                <div class="guideline topline"></div>
+                <div class="guideline midline"></div>
+                <div class="guideline baseline"></div>
+            </div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <div class="action-buttons" style="justify-content: center; margin-top: 15px;">
+                <button class="btn-secondary" onclick="previousLetter()">⬅️ Previous</button>
+                <button class="btn-primary" onclick="checkTracing()">✓ Check My Work</button>
+                <button class="btn-secondary" onclick="nextLetter()">Next ➡️</button>
+            </div>
+            
+            <div class="alphabet-grid" id="alphabetGrid"></div>
+        </div>
+        
+        <div id="readMode" style="display: none;">
+            <div class="word-section">
+                <div style="text-align: center; margin-bottom: 15px; color: #666;">Read this word:</div>
+                <div class="word-display" id="wordDisplay">Hello</div>
+                <div class="word-meaning" id="wordMeaning">A greeting</div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn-primary" onclick="nextWord()">Next Word ➡️</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="lettersLearned">0</div>
+                <div class="stat-label">Letters Learned</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="currentStreak">0</div>
+                <div class="stat-label">Current Streak</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalAttempts">0</div>
+                <div class="stat-label">Total Attempts</div>
+            </div>
+            <div class="stat-item" id="masteredLanguages">
+                <div class="stat-value" id="languagesMastered">0</div>
+                <div class="stat-label">Languages Mastered</div>
+            </div>
+        </div>
+        
+        <div class="progress-overview" id="progressOverview">
+            <h3 style="text-align: center; margin-bottom: 15px;">🌍 Global Progress</h3>
+            <div id="languageProgressList"></div>
+            <div style="margin-top: 15px; text-align: center;">
+                <div style="font-size: 24px; font-weight: bold; color: #667eea;">
+                    <span id="totalProgressPercent">0</span>% Complete
+                </div>
+                <div style="font-size: 14px; color: #666; margin-top: 5px;">
+                    <span id="totalLettersLearned">0</span> / <span id="totalLettersAvailable">0</span> letters
+                </div>
+            </div>
+        </div>
+        
+        <div class="create-language-section" id="createLanguageSection">
+            <h2>🎨 Create Your Own Language! 🎨</h2>
+            <p style="text-align: center; margin-bottom: 20px;">You've mastered all languages! Now create your own.</p>
+            
+            <input type="text" id="customLangName" placeholder="Name your language (e.g., 'MyLang')">
+            <textarea id="customAlphabet" placeholder="Enter your alphabet letters separated by spaces (e.g., A B C D or custom symbols)"></textarea>
+            <input type="text" id="customSample" placeholder="Sample word in your language">
+            <input type="text" id="customMeaning" placeholder="What does it mean?">
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-primary" onclick="createCustomLanguage()" style="font-size: 18px; padding: 15px 40px;">
+                    ✨ Create Language
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="celebration" id="celebration">🎉</div>
+    
+    <div class="achievement-banner" id="achievementBanner">
+        <h2>🏆 ULTIMATE ACHIEVEMENT UNLOCKED! 🏆</h2>
+        <p>You've mastered every letter in every language!</p>
+        <p style="margin-top: 10px; font-size: 20px;">🌟 Create Your Own Language Unlocked! 🌟</p>
+    </div>
+
+
+    <script>
+        // Language data with alphabets and samples
+        const languages = {
+            'en': { name: 'English', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Hello', meaning: 'A greeting', pronunciation: '/eɪ/' },
+            'es': { name: 'Spanish', alphabet: 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ', sample: 'Hola', meaning: 'Hello', pronunciation: '/a/' },
+            'fr': { name: 'French', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Bonjour', meaning: 'Hello', pronunciation: '/a/' },
+            'de': { name: 'German', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜß', sample: 'Hallo', meaning: 'Hello', pronunciation: '/a/' },
+            'it': { name: 'Italian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Ciao', meaning: 'Hello', pronunciation: '/a/' },
+            'pt': { name: 'Portuguese', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Olá', meaning: 'Hello', pronunciation: '/a/' },
+            'ru': { name: 'Russian', alphabet: 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ', sample: 'Привет', meaning: 'Hello', pronunciation: '/a/' },
+            'zh': { name: 'Chinese (Simplified)', alphabet: '一二三四五六七八九十人天大小上下', sample: '你好', meaning: 'Hello', pronunciation: '/nǐ hǎo/' },
+            'ja': { name: 'Japanese', alphabet: 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん', sample: 'こんにちは', meaning: 'Hello', pronunciation: '/kon-ni-chi-wa/' },
+            'ko': { name: 'Korean', alphabet: 'ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣ', sample: '안녕하세요', meaning: 'Hello', pronunciation: '/an-nyeong-ha-se-yo/' },
+            'ar': { name: 'Arabic', alphabet: 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي', sample: 'مرحبا', meaning: 'Hello', pronunciation: '/marhaban/' },
+            'hi': { name: 'Hindi', alphabet: 'अआइईउऊएऐओऔकखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह', sample: 'नमस्ते', meaning: 'Hello', pronunciation: '/namaste/' },
+            'bn': { name: 'Bangla', alphabet: 'অআইঈউঊএঐওঔকখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহ', sample: 'হ্যালো', meaning: 'Hello', pronunciation: '/hello/' },
+            'pa': { name: 'Punjabi', alphabet: 'ਅਆਇਈਉਊਏਐਓਔਕਖਗਘਙਚਛਜਝਞਟਠਡਢਣਤਥਦਧਨਪਫਬਭਮਯਰਲਵਸ਼ਸਹਖ਼ਗ਼ਜ਼ਫ਼', sample: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ', meaning: 'Hello', pronunciation: '/sat sri akal/' },
+            'ta': { name: 'Tamil', alphabet: 'அஆஇஈஉஊஎஏஐஒஓஔகஙசஞடணதநபமயரலவழளறன', sample: 'வணக்கம்', meaning: 'Hello', pronunciation: '/vanakkam/' },
+            'te': { name: 'Telugu', alphabet: 'అఆఇఈఉఊఋఎఏఐఒఓఔకఖగఘఙచఛజఝఞటఠడఢణతథదధనపఫబభమయరలవశషసహళక్షజ్ఞ', sample: 'నమస్కారం', meaning: 'Hello', pronunciation: '/namaskaram/' },
+            'mr': { name: 'Marathi', alphabet: 'अआइईउऊएऐओऔकखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसहळक्षज्ञ', sample: 'नमस्कार', meaning: 'Hello', pronunciation: '/namaskar/' },
+            'gu': { name: 'Gujarati', alphabet: 'અઆઇઈઉઊએઐઓઔકખગઘઙચછજઝઞટઠડઢણતથદધનપફબભમયરલવશષસહળક્ષજ્ઞ', sample: 'નમસ્તે', meaning: 'Hello', pronunciation: '/namaste/' },
+            'kn': { name: 'Kannada', alphabet: 'ಅಆಇಈಉಊಋಎಏಐಒಓಔಕಖಗಘಙಚಛಜಝಞಟಠಡಢಣತಥದಧನಪಫಬಭಮಯರಲವಶಷಸಹಳಕ್ಷಜ್ಞ', sample: 'ನಮಸ್ಕಾರ', meaning: 'Hello', pronunciation: '/namaskara/' },
+            'ml': { name: 'Malayalam', alphabet: 'അആഇഈഉഊഋഎഏഐഒഓഔകഖഗഘങചഛജഝഞടഠഡഢണതഥദധനപഫബഭമയരലവശഷസഹളക്ഷജ്ഞ', sample: 'നമസ്കാരം', meaning: 'Hello', pronunciation: '/namaskaram/' },
+            'ur': { name: 'Urdu', alphabet: 'ابپتٹثجچحخدڈذرڑزژسشصضطظعغفقکگلمنوہیے', sample: 'السلام علیکم', meaning: 'Hello', pronunciation: '/as-salamu alaykum/' },
+            'fa': { name: 'Persian', alphabet: 'ابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی', sample: 'سلام', meaning: 'Hello', pronunciation: '/salam/' },
+            'tr': { name: 'Turkish', alphabet: 'ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ', sample: 'Merhaba', meaning: 'Hello', pronunciation: '/merhaba/' },
+            'pl': { name: 'Polish', alphabet: 'AĄBCĆDEĘFGHIJKLŁMNŃOÓPRSŚTUWYZŹŻ', sample: 'Cześć', meaning: 'Hello', pronunciation: '/czesc/' },
+            'uk': { name: 'Ukrainian', alphabet: 'АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ', sample: 'Привіт', meaning: 'Hello', pronunciation: '/pryvit/' },
+            'el': { name: 'Greek', alphabet: 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ', sample: 'Γειά σου', meaning: 'Hello', pronunciation: '/ya sou/' },
+            'he': { name: 'Hebrew', alphabet: 'אבגדהוזחטיכלמנסעפצקרשת', sample: 'שלום', meaning: 'Hello', pronunciation: '/shalom/' },
+            'th': { name: 'Thai', alphabet: 'กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผพฟภมยรลวศษสหฬอฮ', sample: 'สวัสดี', meaning: 'Hello', pronunciation: '/sawasdee/' },
+            'vi': { name: 'Vietnamese', alphabet: 'AĂÂBCDĐEÊGHIKLMNOÔƠPQRSTUƯVXY', sample: 'Xin chào', meaning: 'Hello', pronunciation: '/xin chao/' },
+            'id': { name: 'Indonesian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Halo', meaning: 'Hello', pronunciation: '/halo/' },
+            'ms': { name: 'Malay', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Hai', meaning: 'Hello', pronunciation: '/hai/' },
+            'tl': { name: 'Filipino', alphabet: 'ABCDEFGHIJKLMNÑNGOPQRSTUVWXYZ', sample: 'Kamusta', meaning: 'Hello', pronunciation: '/kamusta/' },
+            'sw': { name: 'Swahili', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Jambo', meaning: 'Hello', pronunciation: '/jambo/' },
+            'af': { name: 'Afrikaans', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Hallo', meaning: 'Hello', pronunciation: '/hallo/' },
+            'sq': { name: 'Albanian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÇË', sample: 'Përshëndetje', meaning: 'Hello', pronunciation: '/pershendetje/' },
+            'hy': { name: 'Armenian', alphabet: 'ԱԲԳԴԵԶԷԸԹԺԻԼԽԾԿՀՁՂՃՄՅՆՇՈՉՊՋՌՍՎՏՐՑՒՓՔՕՖ', sample: 'Բարև', meaning: 'Hello', pronunciation: '/barev/' },
+            'ka': { name: 'Georgian', alphabet: 'აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ', sample: 'გამარჯობა', meaning: 'Hello', pronunciation: '/gamarjoba/' },
+            'am': { name: 'Amharic', alphabet: 'ሀለሐመሠረሰሸቀበተቸኀነኘአከኸወዐዘዠየደጀገጸፀፈፐ', sample: 'ሰላም', meaning: 'Hello', pronunciation: '/selam/' },
+            'ne': { name: 'Nepali', alphabet: 'अआइईउऊएऐओऔकखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह', sample: 'नमस्ते', meaning: 'Hello', pronunciation: '/namaste/' },
+            'si': { name: 'Sinhala', alphabet: 'අආඇඈඉඊඋඌඑඒඓඔඕඖකඛගඝඞඟචඡජඣඤඥටඨඩඪණතථදධනපඵබභමයරලවශෂසහළෆ', sample: 'ආයුබෝවන්', meaning: 'Hello', pronunciation: '/ayubovan/' },
+            'km': { name: 'Khmer', alphabet: 'កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវឝឞសហឡអ', sample: 'សួស្តី', meaning: 'Hello', pronunciation: '/sua sdei/' },
+            'lo': { name: 'Lao', alphabet: 'ກຂຄງຈສຊຍດຕຖທນບປຜຝພຟມຢຣລວຫອຮ', sample: 'ສະບາຍດີ', meaning: 'Hello', pronunciation: '/sabai di/' },
+            'my': { name: 'Burmese', alphabet: 'ကခဂဃငစဆဇဈဉညဋဌဍဎဏတထဒဓနပဖဗဘမယရလဝသဟဠအ', sample: 'မင်္ဂလာပါ', meaning: 'Hello', pronunciation: '/mingalaba/' },
+            'dv': { name: 'Divehi', alphabet: 'ހށނރބޅކއވމފދތލގޏސޑޒޓޔޕޖޗޘޙޚޛޜޝޞޟޠޡޢޣޤޥ', sample: 'އައްސަލާމު ޢަލައިކުމް', meaning: 'Hello', pronunciation: '/assalamu alaikum/' },
+            'bg': { name: 'Bulgarian', alphabet: 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЮЯ', sample: 'Здравейте', meaning: 'Hello', pronunciation: '/zdraveyte/' },
+            'sr': { name: 'Serbian', alphabet: 'АБВГДЂЕЖЗИЈКЛЉМНЊОПРСТЋУФХЦЧЏШ', sample: 'Здраво', meaning: 'Hello', pronunciation: '/zdravo/' },
+            'mk': { name: 'Macedonian', alphabet: 'АБВГДЃЕЖЗЅИЈКЛЉМНЊОПРСТЌУФХЦЧЏШ', sample: 'Здраво', meaning: 'Hello', pronunciation: '/zdravo/' },
+            'be': { name: 'Belarusian', alphabet: 'АБВГДЕЁЖЗІЙКЛМНОПРСТУЎФХЦЧШЫЭЮЯ', sample: 'Прывітанне', meaning: 'Hello', pronunciation: '/pryvitanne/' },
+            'kk': { name: 'Kazakh', alphabet: 'АӘБВГҒДЕЁЖЗИЙКҚЛМНҢОӨПРСТУҰҮФХҺЦЧШЩЪЫІЬЭЮЯ', sample: 'Сәлеметсіз бе', meaning: 'Hello', pronunciation: '/selemetsiz be/' },
+            'uz': { name: 'Uzbek', alphabet: 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЪЭЮЯЎҚҒҲ', sample: 'Salom', meaning: 'Hello', pronunciation: '/salom/' },
+            'az': { name: 'Azerbaijani', alphabet: 'ABCÇDEƏFGĞHXIİJKQLMNOÖPRSŞTUÜVYZ', sample: 'Salam', meaning: 'Hello', pronunciation: '/salam/' },
+            'mn': { name: 'Mongolian', alphabet: 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ', sample: 'Сайн уу', meaning: 'Hello', pronunciation: '/sain uu/' },
+            'ky': { name: 'Kyrgyz', alphabet: 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ', sample: 'Салам', meaning: 'Hello', pronunciation: '/salam/' },
+            'tg': { name: 'Tajik', alphabet: 'АБВГҒДЕЁЖЗИЙҚКЛМНОПРСТУӮФХҲЧҶШЪЭЮЯ', sample: 'Салом', meaning: 'Hello', pronunciation: '/salom/' },
+            'tk': { name: 'Turkmen', alphabet: 'ABCDÄEFGHIIJKLMNOÖPRSŞTUÜWYZ', sample: 'Salam', meaning: 'Hello', pronunciation: '/salam/' },
+            'tt': { name: 'Tatar', alphabet: 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ', sample: 'Исәнмесез', meaning: 'Hello', pronunciation: '/isanmesez/' },
+            'ba': { name: 'Bashkir', alphabet: 'АБВГҒДҘЕЁЖЗИЙКҠЛМНОӨПРСҪТУҮФХҺЦЧШЩЪЫЬЭЮЯ', sample: 'Сәләм', meaning: 'Hello', pronunciation: '/säläm/' },
+            'cv': { name: 'Chuvash', alphabet: 'АӐБВГДЕЁӖЖЗИЙКЛМНОПРСҪТУӲФХЦЧШЩЪЫЬЭЮЯ', sample: 'Салам', meaning: 'Hello', pronunciation: '/salam/' },
+            'da': { name: 'Danish', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ', sample: 'Hej', meaning: 'Hello', pronunciation: '/hej/' },
+            'no': { name: 'Norwegian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ', sample: 'Hei', meaning: 'Hello', pronunciation: '/hei/' },
+            'sv': { name: 'Swedish', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ', sample: 'Hej', meaning: 'Hello', pronunciation: '/hej/' },
+            'fi': { name: 'Finnish', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ', sample: 'Hei', meaning: 'Hello', pronunciation: '/hei/' },
+            'is': { name: 'Icelandic', alphabet: 'AÁBDÐEÉFGHIÍJKLMNOÓPQRSTUÚVXYÝÞÆÖ', sample: 'Halló', meaning: 'Hello', pronunciation: '/hallo/' },
+            'ga': { name: 'Irish', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚ', sample: 'Dia dhuit', meaning: 'Hello', pronunciation: '/dee-ah ghwit/' },
+            'gd': { name: 'Scottish Gaelic', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÈÌÒÙ', sample: 'Halò', meaning: 'Hello', pronunciation: '/halo/' },
+            'cy': { name: 'Welsh', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÂÊÎÔÛŴŶ', sample: 'Bore da', meaning: 'Good morning', pronunciation: '/bore da/' },
+            'eu': { name: 'Basque', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Kaixo', meaning: 'Hello', pronunciation: '/kaixo/' },
+            'ca': { name: 'Catalan', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÇ', sample: 'Hola', meaning: 'Hello', pronunciation: '/hola/' },
+            'gl': { name: 'Galician', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', sample: 'Ola', meaning: 'Hello', pronunciation: '/ola/' },
+            'ro': { name: 'Romanian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÂÎŞŢ', sample: 'Bună', meaning: 'Hello', pronunciation: '/buna/' },
+            'hu': { name: 'Hungarian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÖŐÚÜŰ', sample: 'Szia', meaning: 'Hello', pronunciation: '/sia/' },
+            'cs': { name: 'Czech', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚÝŽŠČŘĎŤŇ', sample: 'Ahoj', meaning: 'Hello', pronunciation: '/ahoj/' },
+            'sk': { name: 'Slovak', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ', sample: 'Ahoj', meaning: 'Hello', pronunciation: '/ahoj/' },
+            'sl': { name: 'Slovenian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZČŠŽ', sample: 'Zdravo', meaning: 'Hello', pronunciation: '/zdravo/' },
+            'hr': { name: 'Croatian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZČĆĐŠŽ', sample: 'Zdravo', meaning: 'Hello', pronunciation: '/zdravo/' },
+            'bs': { name: 'Bosnian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZČĆĐŠŽ', sample: 'Zdravo', meaning: 'Hello', pronunciation: '/zdravo/' },
+            'et': { name: 'Estonian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜŠŽ', sample: 'Tere', meaning: 'Hello', pronunciation: '/tere/' },
+            'lv': { name: 'Latvian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZĀČĒĢĪĶĻŅŌŖŠŪŽ', sample: 'Sveiki', meaning: 'Hello', pronunciation: '/sveiki/' },
+            'lt': { name: 'Lithuanian', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZĄČĘĖĮŠŲŪŽ', sample: 'Labas', meaning: 'Hello', pronunciation: '/labas/' },
+            'mt': { name: 'Maltese', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZĊĠĦ', sample: 'Bongu', meaning: 'Hello', pronunciation: '/bongu/' },
+            'lb': { name: 'Luxembourgish', alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÉË', sample: 'Moien', meaning: 'Hello', pronunciation: '/moien/' },
+            'yi': { name: 'Yiddish', alphabet: 'אבגדהוזחטיכלמנסעפצקרשת', sample: 'שלום', meaning: 'Hello', pronunciation: '/sholem/' },
+            'eo': { name: 'Esperanto', alphabet: 'ABCĈDEFGĜHĤIJĴKLMNOPRSŜTUŬVZ', sample: 'Saluton', meaning: 'Hello', pronunciation: '/saluton/' },
+            'la': { name: 'Latin', alphabet: 'ABCDEFGHIKLMNOPQRSTVXYZ', sample: 'Salve', meaning: 'Hello', pronunciation: '/salve/' }
+        };
+
+
+        let currentLanguage = 'en';
+        let currentLetterIndex = 0;
+        let isDrawing = false;
+        let canvas, ctx;
+        let lettersLearned = new Set();
+        let currentStreak = 0;
+        let totalAttempts = 0;
+        let currentMode = 'trace';
+        let isLowercase = false;
+        let ultimateAchievementUnlocked = false;
+        let customLanguages = {};
+
+
+        // Initialize the app
+        function init() {
+            canvas = document.getElementById('tracingCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // Load saved progress
+            loadProgress();
+            
+            // Populate language selector
+            const select = document.getElementById('languageSelect');
+            select.innerHTML = '';
+            
+            // Sort languages alphabetically by name
+            const sortedLangs = Object.entries(languages).sort((a, b) => a[1].name.localeCompare(b[1].name));
+            
+            sortedLangs.forEach(([code, lang]) => {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = lang.name;
+                select.appendChild(option);
+            });
+            
+            select.value = 'en';
+            
+            // Event listeners for canvas
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            canvas.addEventListener('touchstart', handleTouch);
+            canvas.addEventListener('touchmove', handleTouch);
+            canvas.addEventListener('touchend', stopDrawing);
+            
+            updateDisplay();
+            drawGuideLetter();
+            updateProgressOverview();
+            
+            // Check if achievement was already unlocked
+            if (localStorage.getItem('ultimateAchievement') === 'unlocked') {
+                ultimateAchievementUnlocked = true;
+                document.getElementById('createLanguageSection').classList.add('active');
+            }
+        }
+
+
+        function loadProgress() {
+            const saved = localStorage.getItem('lettersLearned');
+            if (saved) {
+                lettersLearned = new Set(JSON.parse(saved));
+            }
+            
+            const savedCustom = localStorage.getItem('customLanguages');
+            if (savedCustom) {
+                customLanguages = JSON.parse(savedCustom);
+                // Add custom languages to selector
+                const select = document.getElementById('languageSelect');
+                for (const [code, lang] of Object.entries(customLanguages)) {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = '✨ ' + lang.name + ' (Your Language)';
+                    select.appendChild(option);
+                }
+            }
+        }
+
+
+        function saveProgress() {
+            localStorage.setItem('lettersLearned', JSON.stringify([...lettersLearned]));
+            localStorage.setItem('customLanguages', JSON.stringify(customLanguages));
+        }
+
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            if (e.type === 'touchstart') {
+                isDrawing = true;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            } else if (e.type === 'touchmove' && isDrawing) {
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+        }
+
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGuideLetter();
+        }
+
+
+        function drawGuideLetter() {
+            const lang = languages[currentLanguage] || customLanguages[currentLanguage];
+            let letter = lang.alphabet[currentLetterIndex];
+            
+            // Convert to lowercase if toggle is on and letter has case
+            if (isLowercase && /[A-Z]/.test(letter)) {
+                letter = letter.toLowerCase();
+            }
+            
+            ctx.save();
+            ctx.font = '200px "Segoe UI", sans-serif';
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.2)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(letter, canvas.width / 2, canvas.height / 2);
+            ctx.restore();
+            
+            // Set drawing style
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+
+        function toggleCase() {
+            const lang = languages[currentLanguage] || customLanguages[currentLanguage];
+            // Check if language has different lowercase letters
+            const hasLowercase = /[A-Z]/.test(lang.alphabet);
+            
+            if (!hasLowercase) {
+                alert('This alphabet does not have lowercase letters!');
+                return;
+            }
+            
+            isLowercase = !isLowercase;
+            const btn = document.getElementById('caseToggle');
+            btn.textContent = isLowercase ? '🔡 Lowercase' : '🔠 Uppercase';
+            updateDisplay();
+            clearCanvas();
+        }
+
+
+        function changeLanguage() {
+            currentLanguage = document.getElementById('languageSelect').value;
+            currentLetterIndex = 0;
+            isLowercase = false;
+            document.getElementById('caseToggle').textContent = '🔠 Uppercase';
+            updateDisplay();
+            clearCanvas();
+        }
+
+
+        function updateDisplay() {
+            const lang = languages[currentLanguage] || customLanguages[currentLanguage];
+            let letter = lang.alphabet[currentLetterIndex];
+            
+            // Convert to lowercase if toggle is on and letter has case
+            if (isLowercase && /[A-Z]/.test(letter)) {
+                letter = letter.toLowerCase();
+            }
+            
+            document.getElementById('currentLetter').textContent = letter;
+            document.getElementById('letterInfo').textContent = `Letter ${currentLetterIndex + 1} of ${lang.alphabet.length}`;
+            document.getElementById('pronunciation').textContent = lang.pronunciation || `Letter: ${letter}`;
+            
+            // Update progress bar
+            const progress = ((currentLetterIndex + 1) / lang.alphabet.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            
+            // Update alphabet grid
+            const grid = document.getElementById('alphabetGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < lang.alphabet.length; i++) {
+                const item = document.createElement('div');
+                item.className = 'alphabet-item';
+                let displayLetter = lang.alphabet[i];
+                if (isLowercase && /[A-Z]/.test(displayLetter)) {
+                    displayLetter = displayLetter.toLowerCase();
+                }
+                item.textContent = displayLetter;
+                
+                if (i === currentLetterIndex) {
+                    item.classList.add('active');
+                }
+                if (lettersLearned.has(`${currentLanguage}-${i}`)) {
+                    item.classList.add('learned');
+                }
+                
+                item.onclick = () => {
+                    currentLetterIndex = i;
+                    updateDisplay();
+                    clearCanvas();
+                };
+                
+                grid.appendChild(item);
+            }
+            
+            // Update stats
+            document.getElementById('lettersLearned').textContent = lettersLearned.size;
+            document.getElementById('currentStreak').textContent = currentStreak;
+            document.getElementById('totalAttempts').textContent = totalAttempts;
+            
+            saveProgress();
+        }
+
+
+        function nextLetter() {
+            const lang = languages[currentLanguage] || customLanguages[currentLanguage];
+            if (currentLetterIndex < lang.alphabet.length - 1) {
+                currentLetterIndex++;
+                updateDisplay();
+                clearCanvas();
+            }
+        }
+
+
+        function previousLetter() {
+            if (currentLetterIndex > 0) {
+                currentLetterIndex--;
+                updateDisplay();
+                clearCanvas();
+            }
+        }
+
+
+        function checkTracing() {
+            totalAttempts++;
+            
+            // Simple check: did they draw enough?
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+            let drawnPixels = 0;
+            
+            for (let i = 3; i < pixels.length; i += 4) {
+                if (pixels[i] > 0) drawnPixels++;
+            }
+            
+            const feedback = document.getElementById('feedback');
+            
+            if (drawnPixels > 1000) {
+                feedback.textContent = '🎉 Great job! You traced the letter!';
+                feedback.className = 'feedback success show';
+                // Track letter as learned (case insensitive for achievement tracking)
+                lettersLearned.add(`${currentLanguage}-${currentLetterIndex}`);
+                currentStreak++;
+                
+                // Check for ultimate achievement
+                checkUltimateAchievement();
+                
+                // Celebration animation
+                const celebration = document.getElementById('celebration');
+                celebration.style.display = 'block';
+                setTimeout(() => {
+                    celebration.style.display = 'none';
+                }, 1000);
+                
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                    nextLetter();
+                }, 1500);
+            } else {
+                feedback.textContent = '✏️ Try tracing more of the letter!';
+                feedback.className = 'feedback try-again show';
+                currentStreak = 0;
+                
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 2000);
+            }
+            
+            updateDisplay();
+        }
+
+
+        function checkUltimateAchievement() {
+            if (ultimateAchievementUnlocked) return;
+            
+            let totalLetters = 0;
+            let learnedCount = 0;
+            
+            for (const [code, lang] of Object.entries(languages)) {
+                totalLetters += lang.alphabet.length;
+                for (let i = 0; i < lang.alphabet.length; i++) {
+                    if (lettersLearned.has(`${code}-${i}`)) {
+                        learnedCount++;
+                    }
+                }
+            }
+            
+            // Check custom languages too
+            for (const [code, lang] of Object.entries(customLanguages)) {
+                totalLetters += lang.alphabet.length;
+                for (let i = 0; i < lang.alphabet.length; i++) {
+                    if (lettersLearned.has(`${code}-${i}`)) {
+                        learnedCount++;
+                    }
+                }
+            }
+            
+            if (learnedCount >= totalLetters && totalLetters > 0) {
+                unlockUltimateAchievement();
+            }
+            
+            updateProgressOverview();
+        }
+
+
+        function unlockUltimateAchievement() {
+            ultimateAchievementUnlocked = true;
+            
+            // Show achievement banner
+            const banner = document.getElementById('achievementBanner');
+            banner.classList.add('show');
+            
+            // Play celebration
+            const celebration = document.getElementById('celebration');
+            celebration.textContent = '🏆';
+            celebration.style.display = 'block';
+            
+            // Unlock create language section
+            document.getElementById('createLanguageSection').classList.add('active');
+            
+            // Save to localStorage
+            localStorage.setItem('ultimateAchievement', 'unlocked');
+            
+            // Hide banner after 10 seconds
+            setTimeout(() => {
+                banner.classList.remove('show');
+                celebration.style.display = 'none';
+            }, 10000);
+        }
+
+
+        function updateProgressOverview() {
+            const list = document.getElementById('languageProgressList');
+            list.innerHTML = '';
+            
+            let totalLetters = 0;
+            let totalLearned = 0;
+            let masteredCount = 0;
+            
+            // Combine regular and custom languages
+            const allLanguages = {...languages, ...customLanguages};
+            
+            for (const [code, lang] of Object.entries(allLanguages)) {
+                const langTotal = lang.alphabet.length;
+                let langLearned = 0;
+                
+                for (let i = 0; i < langTotal; i++) {
+                    if (lettersLearned.has(`${code}-${i}`)) {
+                        langLearned++;
+                    }
+                }
+                
+                totalLetters += langTotal;
+                totalLearned += langLearned;
+                
+                const percent = Math.round((langLearned / langTotal) * 100);
+                const isMastered = langLearned === langTotal;
+                if (isMastered) masteredCount++;
+                
+                const item = document.createElement('div');
+                item.className = 'progress-bar-container';
+                item.innerHTML = `
+                    <label>
+                        <span>${lang.name} ${isMastered ? '✅' : ''}</span>
+                        <span>${langLearned}/${langTotal} (${percent}%)</span>
+                    </label>
+                    <div class="mini-progress">
+                        <div class="mini-progress-fill" style="width: ${percent}%"></div>
+                    </div>
+                `;
+                list.appendChild(item);
+            }
+            
+            const totalPercent = totalLetters > 0 ? Math.round((totalLearned / totalLetters) * 100) : 0;
+            document.getElementById('totalProgressPercent').textContent = totalPercent;
+            document.getElementById('totalLettersLearned').textContent = totalLearned;
+            document.getElementById('totalLettersAvailable').textContent = totalLetters;
+            document.getElementById('languagesMastered').textContent = masteredCount;
+        }
+
+
+        function createCustomLanguage() {
+            const name = document.getElementById('customLangName').value.trim();
+            const alphabetText = document.getElementById('customAlphabet').value.trim();
+            const sample = document.getElementById('customSample').value.trim();
+            const meaning = document.getElementById('customMeaning').value.trim();
+            
+            if (!name || !alphabetText || !sample) {
+                alert('Please fill in at least the language name, alphabet, and sample word!');
+                return;
+            }
+            
+            // Parse alphabet (split by spaces or treat each character as letter)
+            const alphabet = alphabetText.split(' ').filter(c => c.trim().length > 0);
+            
+            if (alphabet.length === 0) {
+                alert('Please enter at least one letter for your alphabet!');
+                return;
+            }
+            
+            const code = 'custom-' + Date.now();
+            customLanguages[code] = {
+                name: name,
+                alphabet: alphabet.join(''),
+                sample: sample,
+                meaning: meaning || 'A word in ' + name,
+                pronunciation: '/custom/',
+                isCustom: true
+            };
+            
+            // Add to language selector
+            const select = document.getElementById('languageSelect');
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = '✨ ' + name + ' (Your Language)';
+            select.appendChild(option);
+            
+            // Switch to new language
+            select.value = code;
+            changeLanguage();
+            
+            // Clear inputs
+            document.getElementById('customLangName').value = '';
+            document.getElementById('customAlphabet').value = '';
+            document.getElementById('customSample').value = '';
+            document.getElementById('customMeaning').value = '';
+            
+            alert(`🎉 Congratulations! Your language "${name}" has been created! You can now trace its ${alphabet.length} letters!`);
+            
+            updateProgressOverview();
+            saveProgress();
+        }
+
+
+        function speakCurrent() {
+            const lang = languages[currentLanguage] || customLanguages[currentLanguage];
+            let letter = lang.alphabet[currentLetterIndex];
+            if (isLowercase && /[A-Z]/.test(letter)) {
+                letter = letter.toLowerCase();
+            }
+            
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(letter);
+                utterance.lang = currentLanguage === 'zh' ? 'zh-CN' : currentLanguage;
+                utterance.rate = 0.8;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (mode === 'trace') {
+                document.getElementById('traceMode').style.display = 'block';
+                document.getElementById('readMode').style.display = 'none';
+            } else {
+                document.getElementById('traceMode').style.display = 'none';
+                document.getElementById('readMode').style.display = 'block';
+                nextWord();
+            }
+        }
+
+
+        function nextWord() {
+            const lang = languages[currentLanguage] || customLanguages[currentLanguage];
+            document.getElementById('wordDisplay').textContent = lang.sample;
+            document.getElementById('wordMeaning').textContent = lang.meaning;
+            
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(lang.sample);
+                utterance.lang = currentLanguage === 'zh' ? 'zh-CN' : currentLanguage;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+
+        // Initialize when page loads
+        window.onload = init;
+        window.onresize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            clearCanvas();
+        };
+    </script>
+</body>
+</html>
